@@ -19,9 +19,6 @@ mean_steps <- mean(df$steps, na.rm=TRUE)
 median_steps <- median(df$steps, na.rm=TRUE)
 ```
 **The mean number of daily steps is `r mean_steps`.**
-
-
-
 **The median number of daily steps is `r median_steps`.**
 
 
@@ -60,7 +57,33 @@ df2$steps[is.na(df2$steps)] <- df2$daily_mean[is.na(df2$steps)]
 # give the same structure as the original df
 new_df <- df2[,c(2,1,3)]
 ```
-**The number of rows that have NA values is `r rows_with_na`. Only 'steps' has NA values. **
+**The number of rows that have NA values is `r rows_with_na`. Only 'steps' has NA values.**
+
+```{r, echo=TRUE}
+qplot(steps, data=new_df, geom="histogram", binwidth=30)
+new_mean_steps <- mean(new_df$steps, na.rm=TRUE)
+new_median_steps <- median(new_df$steps, na.rm=TRUE)
+
+```
+**After imputation, the mean number of daily steps is `r new_mean_steps`.**
+**After imputation, the median number of daily steps is `r new_median_steps`.**
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r, echo=TRUE}
+# add the day category of weekday or weekend
+day_cat <- function(d) { ifelse(sum(!is.na(match(c("Saturday", "Sunday"), weekdays(d))))==1,"weekend", "weekday") }
+new_df$day_cat <- sapply(new_df$date, FUN=day_cat)
+
+new_step_agg <- aggregate(new_df$steps, by=list(new_df$interval, new_df$day_cat), FUN=mean, na.rm=TRUE)
+colnames(new_step_agg) <- c("interval", "day_cat", "mean_steps")
+
+library(lattice)
+xyplot(mean_steps ~ interval | day_cat, data = new_step_agg, type='l', layout = c(1,2), xlab="Interval", ylab="Number of Steps")
+
+```
+
+
+
+
+
